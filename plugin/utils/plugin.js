@@ -1,4 +1,4 @@
-// 配置日志文件
+// Configure log file
 const now = new Date();
 const log = require('log4js').configure({
     appenders: {
@@ -10,7 +10,7 @@ const log = require('log4js').configure({
 }).getLogger();
 
 //##################################################
-//##################全局异常捕获#####################
+//##################Global Exception Handling#####################
 process.on('uncaughtException', (error) => {
     log.error('Uncaught Exception:', error);
 });
@@ -21,7 +21,7 @@ process.on('unhandledRejection', (reason) => {
 //##################################################
 
 
-// 插件类
+// Plugin class
 const ws = require('ws');
 class Plugins {
     static language = JSON.parse(process.argv[9]).application.language;
@@ -37,7 +37,7 @@ class Plugins {
         this.ws.on('close', process.exit);
         this.ws.on('message', e => {
             if (this.getGlobalSettingsFlag) {
-                // 只获取一次
+                // Fetch only once
                 this.getGlobalSettingsFlag = false;
                 this.getGlobalSettings();
             }
@@ -66,7 +66,7 @@ class Plugins {
             context: process.argv[5],
         }));
     }
-    // 设置标题
+    // Set title
     setTitle(context, str, row = 0, num = 6) {
         let newStr = null;
         if (row && str) {
@@ -85,7 +85,7 @@ class Plugins {
             }
         }));
     }
-    // 设置背景
+    // Set background
     setImage(context, url) {
         this.ws.send(JSON.stringify({
             event: "setImage",
@@ -95,14 +95,14 @@ class Plugins {
             }
         }));
     }
-    // 设置状态
+    // Set state
     setState(context, state) {
         this.ws.send(JSON.stringify({
             event: "setState",
             context, payload: { state }
         }));
     }
-    // 保存持久化数据
+    // Save persistent data
     setSettings(context, payload) {
         this.ws.send(JSON.stringify({
             event: "setSettings",
@@ -110,7 +110,7 @@ class Plugins {
         }));
     }
 
-    // 在按键上展示警告
+    // Show alert on button
     showAlert(context) {
         this.ws.send(JSON.stringify({
             event: "showAlert",
@@ -118,14 +118,14 @@ class Plugins {
         }));
     }
 
-    // 在按键上展示成功
+    // Show success on button
     showOk(context) {
         this.ws.send(JSON.stringify({
             event: "showOk",
             context
         }));
     }
-    // 发送给属性检测器
+    // Send to property inspector
     sendToPropertyInspector(payload) {
         this.ws.send(JSON.stringify({
             action: Actions.currentAction,
@@ -133,7 +133,7 @@ class Plugins {
             payload, event: "sendToPropertyInspector"
         }));
     }
-    // 用默认浏览器打开网页
+    // Open webpage in default browser
     openUrl(url) {
         this.ws.send(JSON.stringify({
             event: "openUrl",
@@ -142,14 +142,14 @@ class Plugins {
     }
 };
 
-// 操作类
+// Action class
 class Actions {
     constructor(data) {
         this.data = {};
         this.default = {};
         Object.assign(this, data);
     }
-    // 属性检查器显示时
+    // When property inspector is displayed
     static currentAction = null;
     static currentContext = null;
     static actions = {};
@@ -158,7 +158,7 @@ class Actions {
         Actions.currentContext = data.context;
         this._propertyInspectorDidAppear?.(data);
     }
-    // 初始化数据
+    // Initialize data
     willAppear(data) {
         Plugins.globalContext = data.context;
         Actions.actions[data.context] = data.action
@@ -171,7 +171,7 @@ class Actions {
         this.data[data.context] = data.payload.settings;
         this._didReceiveSettings?.(data);
     }
-    // 行动销毁
+    // Destroy action
     willDisappear(data) {
         this._willDisappear?.(data);
         delete this.data[data.context];
@@ -183,7 +183,7 @@ class EventEmitter {
         this.events = {};
     }
 
-    // 订阅事件
+    // Subscribe to event
     subscribe(event, listener) {
         if (!this.events[event]) {
             this.events[event] = [];
@@ -191,14 +191,14 @@ class EventEmitter {
         this.events[event].push(listener);
     }
 
-    // 取消订阅
+    // Unsubscribe
     unsubscribe(event, listenerToRemove) {
         if (!this.events[event]) return;
 
         this.events[event] = this.events[event].filter(listener => listener !== listenerToRemove);
     }
 
-    // 发布事件
+    // Publish event
     emit(event, data) {
         if (!this.events[event]) return;
         this.events[event].forEach(listener => listener(data));
